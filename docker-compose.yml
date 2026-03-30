@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - trading-network
+
+  exchange:
+    build: ./Exchange
+    container_name: exchange
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    networks:
+      - trading-network
+
+  tradelistener:
+    build: ./TradeListener
+    container_name: tradelistener
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+    networks:
+      - trading-network
+
+networks:
+  trading-network:
+    driver: bridge

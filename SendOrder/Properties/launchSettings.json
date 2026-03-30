@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PBT205_A1_T2": {
+      "commandName": "Project",
+      "commandLineArgs": "trader1 BUY 10.5\r\ntrader2 SELL 9.5"
+    }
+  }
+}
