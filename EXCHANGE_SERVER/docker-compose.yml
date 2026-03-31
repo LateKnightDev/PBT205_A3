@@ -20,16 +20,6 @@ services:
     networks:
       - trading-network
 
-  tradelistener:
-    build: ./TradeListener
-    container_name: tradelistener
-    depends_on:
-      - rabbitmq
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-    networks:
-      - trading-network
-
 networks:
   trading-network:
     driver: bridge

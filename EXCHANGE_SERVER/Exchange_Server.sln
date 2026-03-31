@@ -3,11 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36429.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SendOrder", "SendOrder\SendOrder.csproj", "{3DC7E1A8-E283-4CC0-B251-2800D89FB829}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Exchange", "Exchange\Exchange.csproj", "{638F189A-D446-40EE-8FCB-EB1D2FA332E2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeListener", "TradeListener\TradeListener.csproj", "{93A56588-ADD4-4CF9-885F-DA6E19D23D1A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 	ProjectSection(SolutionItems) = preProject
@@ -20,18 +16,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3DC7E1A8-E283-4CC0-B251-2800D89FB829}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3DC7E1A8-E283-4CC0-B251-2800D89FB829}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3DC7E1A8-E283-4CC0-B251-2800D89FB829}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3DC7E1A8-E283-4CC0-B251-2800D89FB829}.Release|Any CPU.Build.0 = Release|Any CPU
 		{638F189A-D446-40EE-8FCB-EB1D2FA332E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{638F189A-D446-40EE-8FCB-EB1D2FA332E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{638F189A-D446-40EE-8FCB-EB1D2FA332E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{638F189A-D446-40EE-8FCB-EB1D2FA332E2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{93A56588-ADD4-4CF9-885F-DA6E19D23D1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{93A56588-ADD4-4CF9-885F-DA6E19D23D1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{93A56588-ADD4-4CF9-885F-DA6E19D23D1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{93A56588-ADD4-4CF9-885F-DA6E19D23D1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
