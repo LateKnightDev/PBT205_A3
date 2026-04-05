@@ -15,8 +15,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 
-Dictionary<string, List<Order>> buyOrders = new Dictionary<string, List<Order>>(); // May delete later once DB is setup
-Dictionary<string, List<Order>> sellOrders = new Dictionary<string, List<Order>>(); // May delete later once DB is setup
+// PopulateDB.Run(); // Run once to create and populate the database with sample data, comment out after first run
+// QueryDB.Run(); // Run this along with return; below to query the DB
+// return;
 
 string host = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
 
@@ -61,86 +62,28 @@ EventingBasicConsumer consumer = new EventingBasicConsumer(channel); // Open cha
 
 consumer.Received += (sender, each) =>
 {
-    byte[] instruction = each.Body.ToArray(); // Receives the instruction as a byte array (from SendOrder)
+    byte[] instruction = each.Body.ToArray(); // Receives the instruction as a byte array (from RabbitMQ)
     string message = Encoding.UTF8.GetString(instruction); // Converts the byte array back to a string
-    Order? order = JsonSerializer.Deserialize<Order>(message, new JsonSerializerOptions{PropertyNameCaseInsensitive = true}); // Converts to Order object
+    Order? order = JsonSerializer.Deserialize<Order>(message, new JsonSerializerOptions{PropertyNameCaseInsensitive = true}); // Converts to Order object (temporary storage)
     if (order == null) // Little fix for a warning CS8600. May be null and cause a crash
     {
         Console.WriteLine("Invalid order received");
         return;
     }
-    ProcessOrder(order);
+    bool tradeExecuted = false;
+    Trade? executedTrade = null;
+    ManageDB.QueryOrders(order, out tradeExecuted, out executedTrade); // Queries the database for matching orders and executes trade or adds to correct order table
+    if (tradeExecuted)
+    {
+        PublishTrade(executedTrade);
+        tradeExecuted = false;
+        executedTrade = null;
+    }
 };
 channel.BasicConsume(queue: "Orders", autoAck: true, consumer: consumer); // Listening for messages on the Orders queue
-
 Console.WriteLine("Exchange is running..."); // Message to acknowledge this program is running
-
 Thread.Sleep(Timeout.Infinite); // Used with Docker
-
-void ProcessOrder(Order order)
-{
-    // If there are no previous trades under that trading company code:
-    if (!buyOrders.ContainsKey(order.Code))
-        buyOrders[order.Code] = new List<Order>();
-    if (!sellOrders.ContainsKey(order.Code))
-        sellOrders[order.Code] = new List<Order>();
-
-    if (order.Side == "BUY")
-    {
-        Order? matchingSell = sellOrders[order.Code] // Looking for a matching sell order from the list of sellOrders
-            .Where(sellPrice => sellPrice.Price <= order.Price) // Find a sell order with a price less than or equal to the buy order price
-            .OrderBy(sellPrice => sellPrice.Price) // If more than one match, sort by lowest price first
-            .FirstOrDefault(); // Take the first match (lowest price) or null if no match
-
-        if (matchingSell != null) // Trade match found
-        {
-            sellOrders[order.Code].Remove(matchingSell); // Remove the matched sell order from the list of unmatched sell orders
-            Trade trade = new Trade // Create a new trade object with the details of the executed trade
-            {
-                Buyer = order.Username,
-                Seller = matchingSell.Username,
-                Quantity = order.Quantity,
-                Price = matchingSell.Price,
-                Code = order.Code,
-                Timestamp = DateTime.UtcNow
-            };
-            PublishTrade(trade); // Publish the trade to the Trades queue on RabbitMQ
-        }
-        else // No trade match found, add to the list of unmatched buy orders
-        {
-            buyOrders[order.Code].Add(order);
-            buyOrders[order.Code] = buyOrders[order.Code].OrderByDescending(buyPrice => buyPrice.Price).ToList();
-        }
-    }
-    else if (order.Side == "SELL")
-    {
-        Order? matchingBuy = buyOrders[order.Code] // Looking for a matching buy order from the list of buyOrders
-            .Where(buyPrice => buyPrice.Price >= order.Price) // Find a buy order with a price greater than or equal to the sell order price
-            .OrderByDescending(buyPrice => buyPrice.Price) // If more than one match, sort by highest price first
-            .FirstOrDefault(); // Take the first match (highest price) or null if no match
-
-        if (matchingBuy != null) // Trade match found
-        {
-            buyOrders[order.Code].Remove(matchingBuy); // Remove the matched buy order from the list of unmatched buy orders
-            Trade trade = new Trade // Create a new trade object with the details of the executed trade
-            {
-                Buyer = matchingBuy.Username,
-                Seller = order.Username,
-                Quantity = order.Quantity,
-                Price = matchingBuy.Price,
-                Code = order.Code,
-                Timestamp = DateTime.UtcNow
-            };
-            PublishTrade(trade); // Publish the trade to the Trades queue on RabbitMQ
-        }
-        else // No trade match found, add to the list of unmatched sell orders
-        {
-            sellOrders[order.Code].Add(order);
-            sellOrders[order.Code] = sellOrders[order.Code].OrderBy(sellPrice => sellPrice.Price).ToList();
-        }
-    }
-}
-void PublishTrade(Trade trade) // Publishes message to RabbitMQ
+void PublishTrade(Trade? trade) // Publishes message to RabbitMQ
 {
     string message = JsonSerializer.Serialize(trade);
     byte[] instruction = Encoding.UTF8.GetBytes(message);

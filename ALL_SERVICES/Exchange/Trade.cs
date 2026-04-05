@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// Retaining for the purpose of posting Trade information to RabbitMQ
+
 namespace Exchange
 {
     public class Trade // Class representing a trade that was made, split into the required information
