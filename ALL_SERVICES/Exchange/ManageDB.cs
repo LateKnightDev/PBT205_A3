@@ -42,6 +42,8 @@ namespace Exchange
 
         public static void InsertOrder(Order newOrder)
         {
+            Console.WriteLine("Inserting order to DB"); // Debugging
+
             using (SqliteConnection connection = new SqliteConnection(dbLocation))
             {
                 connection.Open();
@@ -59,6 +61,8 @@ namespace Exchange
         }
         public static void DeleteOrder(string side, int orderId)
         {
+            Console.WriteLine("Deleting order from DB"); // Debugging
+            
             using (SqliteConnection connection = new SqliteConnection(dbLocation))
             {
                 connection.Open();
@@ -73,6 +77,8 @@ namespace Exchange
         }
         public static Trade InsertTrade(string buyer, string seller, int quantity, double price, string code)
         {
+            Console.WriteLine("Inserting trade into DB"); // Debugging
+            
             using (SqliteConnection connection = new SqliteConnection(dbLocation))
             {
                 connection.Open();
@@ -100,6 +106,10 @@ namespace Exchange
         }
         public static void QueryOrders(Order newOrder, out bool successfulTrade, out Trade? tradeDetails)
         {
+            Console.WriteLine("QueryOrders called"); // Debugging
+            Console.WriteLine($"Incoming: {newOrder.Username} {newOrder.Side} {newOrder.Quantity} {newOrder.Price} {newOrder.Code}"); // Debugging
+
+
             using (SqliteConnection connection = new SqliteConnection(dbLocation))
             {
                 connection.Open();
@@ -146,6 +156,8 @@ namespace Exchange
                         }
                         if (matchFound) // Process Trade
                         {
+                            Console.WriteLine("We found a trade!!!"); // Debugging
+
                             successfulTrade = true;
                             if (newOrder.Side == "BUY")
                             {
@@ -160,6 +172,8 @@ namespace Exchange
                         }
                         else // No match found
                         {
+                            Console.WriteLine("We didn't find a trade!!!"); // Debugging
+
                             successfulTrade = false;
                             InsertOrder(newOrder);
                         }

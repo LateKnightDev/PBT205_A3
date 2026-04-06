@@ -60,29 +60,48 @@ channel.QueueBind(queue: "Trades", exchange: "Trading", routingKey: "Trades"); /
 
 EventingBasicConsumer consumer = new EventingBasicConsumer(channel); // Open channel to listen for messages on Orders queue
 
+Console.WriteLine("Consumer created"); // Debugging
+
 consumer.Received += (sender, each) =>
 {
+    Console.WriteLine("Consumer created"); // Debugging
+
     byte[] instruction = each.Body.ToArray(); // Receives the instruction as a byte array (from RabbitMQ)
     string message = Encoding.UTF8.GetString(instruction); // Converts the byte array back to a string
+
+    Console.WriteLine("Message coming through from RabbitMQ looks like this:"); // Debugging
+    Console.WriteLine($"RAW MESSAGE: {message}"); // Debugging
+
     Order? order = JsonSerializer.Deserialize<Order>(message, new JsonSerializerOptions{PropertyNameCaseInsensitive = true}); // Converts to Order object (temporary storage)
     if (order == null) // Little fix for a warning CS8600. May be null and cause a crash
     {
         Console.WriteLine("Invalid order received");
         return;
     }
+
+    Console.WriteLine($"Parsed Order → {order.Username} | {order.Side} | {order.Quantity} | {order.Price} | {order.Code}"); // Debugging
+
     bool tradeExecuted = false;
     Trade? executedTrade = null;
     ManageDB.QueryOrders(order, out tradeExecuted, out executedTrade); // Queries the database for matching orders and executes trade or adds to correct order table
     if (tradeExecuted)
     {
+        Console.WriteLine("Trade executed → Not the buyer or sell but some message"); // Debugging
+
         PublishTrade(executedTrade);
         tradeExecuted = false;
         executedTrade = null;
     }
 };
+
+Console.WriteLine("Subscribing to Orders queue..."); // Debugging
+
 channel.BasicConsume(queue: "Orders", autoAck: true, consumer: consumer); // Listening for messages on the Orders queue
-Console.WriteLine("Exchange is running..."); // Message to acknowledge this program is running
+
+Console.WriteLine("Exchange is running... with eggs!"); // Message to acknowledge this program is running
+Console.WriteLine("With even more eggs..."); // Debugging
 Thread.Sleep(Timeout.Infinite); // Used with Docker
+
 void PublishTrade(Trade? trade) // Publishes message to RabbitMQ
 {
     string message = JsonSerializer.Serialize(trade);

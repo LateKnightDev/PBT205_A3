@@ -4,11 +4,17 @@ import pika
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 #Connect to RabbitMQ on localhost
 def connect_to_middleware():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    #connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost')) #commented out to try and connect to rabbitmq
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', port=5672)) #Trying this
     
     #make the channel, which will be used to send messages 
     channel = connection.channel()                    #program pauses until connection is made because it is 'blocking' (not async/event driven)
-          
+    
+    channel.exchange_declare(exchange='Trading', exchange_type='direct', durable=True) #Trying adding this too
+
+    channel.queue_declare(queue='Orders', durable=True)
+    channel.queue_bind(exchange='Trading', queue='Orders', routing_key='Orders')
+
     return connection, channel
 
 #create message and send it through a channel

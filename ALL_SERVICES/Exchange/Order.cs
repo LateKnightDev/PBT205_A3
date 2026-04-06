@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+// This class operates as a temporary data storage place for incoming orders, they are deleted after processing
+
 namespace Exchange
 {
-    // This class operates as a temporary data storage place for incoming orders, they are deleted after processing
     public class Order // Class representing an order received by the exchange, split into the information required
     {
         public string Username { get; set; } // Username

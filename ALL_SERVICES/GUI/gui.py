@@ -65,12 +65,25 @@ def on_click_send_order(sender, app_data, user_data):
         return
     
     #decode the dict values and send to rabbit as json string
-    send = []
-    for value in user_data.values():
-        send.append(dpg.get_value(value))
-    send = json.dumps(send)
+    
+    #Mucking around with the below:
+    #send = []
+    #for value in user_data.values():
+    #    send.append(dpg.get_value(value))
+    #send = json.dumps(send)
+
+    order = {
+    "username": dpg.get_value(user_data["username"]),
+    "side": dpg.get_value(user_data["side"]).upper(),  # ensure BUY/SELL in CAPSLOCK
+    "quantity": int(dpg.get_value(user_data["quantity"])),
+    "price": float(dpg.get_value(user_data["price"])),
+    "code": dpg.get_value(user_data["code"])
+    }
+
+    send = json.dumps(order)
+
     print("sent message: ", send)
-    send_order_publisher.publish("order", send.encode())
+    send_order_publisher.publish("Orders", send.encode()) # previously "order", but the RabbitMQ queue is called "Orders"
 
     #display success and block for a few seconds to stop spam
     dpg.set_value("success_text", "Success!")
@@ -191,7 +204,7 @@ def show_main_ui():
 #try to connect to rabbit
 try:
     send_order_publisher = rabbitmq_logic.Publisher()
-    send_order_publisher.bind_queue("Orders", "order")
+    #send_order_publisher.bind_queue("Orders", "Orders") #changed both to "Orders". Commented out for now
     show_main_ui()
 except Exception as e:
     print(e)

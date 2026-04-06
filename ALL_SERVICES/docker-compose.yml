@@ -18,6 +18,8 @@ services:
       - RABBITMQ_HOST=rabbitmq
     networks:
       - trading-network
+    volumes:
+    - ./Database:/app/Database
   
 networks:
   trading-network:
