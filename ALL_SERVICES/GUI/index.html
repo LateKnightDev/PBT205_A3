@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trades Visualiser</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0e0e0;
+            color: #000000;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #000000;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            background-color: #ffffff;
+            color: #000000;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #6496fa;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #78a6ff;
+        }
+        button:active {
+            background-color: #fac564;
+        }
+        button:disabled {
+            background-color: #003cb4;
+            cursor: not-allowed;
+        }
+        .success {
+            color: #00ff00;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .error {
+            color: #ff0000;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Send Order</h1>
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="side">Buy/Sell:</label>
+                <select id="side" name="side" required>
+                    <option value="BUY">Buy</option>
+                    <option value="SELL">Sell</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quantity">Quantity (#):</label>
+                <input type="number" id="quantity" name="quantity" required>
+            </div>
+            <div class="form-group">
+                <label for="price">Price ($.¢¢):</label>
+                <input type="number" step="0.01" id="price" name="price" required>
+            </div>
+            <div class="form-group">
+                <label for="code">Code:</label>
+                <input type="text" id="code" name="code" required>
+            </div>
+            <button type="submit" id="sendButton">Send</button>
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('orderForm');
+        const sendButton = document.getElementById('sendButton');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Validate inputs
+            const username = document.getElementById('username').value.trim();
+            const side = document.getElementById('side').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const code = document.getElementById('code').value.trim();
+
+            if (!username || !code) {
+                showMessage('Username and Code cannot be empty', 'error');
+                return;
+            }
+            if (isNaN(quantity) || quantity <= 0) {
+                showMessage('Quantity must be a positive integer', 'error');
+                return;
+            }
+            if (isNaN(price) || price <= 0) {
+                showMessage('Price must be a positive number', 'error');
+                return;
+            }
+
+            // Disable button
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
+
+            // Prepare order data
+            const order = {
+                username,
+                side,
+                quantity,
+                price,
+                code
+            };
+
+            try {
+                // Send to backend (replace with actual endpoint)
+                const response = await fetch('/send_order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(order)
+                });
+
+                if (response.ok) {
+                    showMessage('Success!', 'success');
+                } else {
+                    showMessage('Failed to send order', 'error');
+                }
+            } catch (error) {
+                showMessage('Error sending order', 'error');
+            }
+
+            // Re-enable button after 3 seconds
+            setTimeout(() => {
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send';
+                messageDiv.textContent = '';
+            }, 3000);
+        });
+
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = type;
+        }
+    </script>
+</body>
+</html>
