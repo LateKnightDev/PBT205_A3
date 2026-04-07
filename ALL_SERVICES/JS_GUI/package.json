@@ -1,0 +1,13 @@
+{
+  "name": "trading-gui-backend",
+  "version": "1.0.0",
+  "description": "Backend server for trading GUI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "amqplib": "^0.10.3"
+  }
+}

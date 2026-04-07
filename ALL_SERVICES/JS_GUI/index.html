@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trades Visualiser - Send Order</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #000;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #000;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #000;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #6496fa;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #78a6ff;
+        }
+        button:active {
+            background-color: #fac564;
+        }
+        #success-text {
+            text-align: center;
+            color: green;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Send Order</h1>
+        <form id="order-form">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="side">Buy/Sell:</label>
+                <select id="side" name="side" required>
+                    <option value="BUY">Buy</option>
+                    <option value="SELL">Sell</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quantity">Quantity (#):</label>
+                <input type="number" id="quantity" name="quantity" required>
+            </div>
+            <div class="form-group">
+                <label for="price">Price ($.¢¢):</label>
+                <input type="number" step="0.01" id="price" name="price" required>
+            </div>
+            <div class="form-group">
+                <label for="code">Code:</label>
+                <input type="text" id="code" name="code" required>
+            </div>
+            <button type="submit" id="send-button">Send</button>
+        </form>
+        <div id="success-text"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('order-form');
+        const successText = document.getElementById('success-text');
+        const sendButton = document.getElementById('send-button');
+
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            const order = {
+                username: formData.get('username'),
+                side: formData.get('side'),
+                quantity: parseInt(formData.get('quantity')),
+                price: parseFloat(formData.get('price')),
+                code: formData.get('code')
+            };
+
+            try {
+                const response = await fetch('/send-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(order)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Display success message
+                    successText.textContent = 'Success!';
+                    sendButton.disabled = true;
+
+                    // Re-enable button after 3 seconds
+                    setTimeout(() => {
+                        successText.textContent = '';
+                        sendButton.disabled = false;
+                    }, 3000);
+                } else {
+                    successText.textContent = result.error || 'Error sending order';
+                    successText.style.color = 'red';
+                    setTimeout(() => {
+                        successText.textContent = '';
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                successText.textContent = 'Network error';
+                successText.style.color = 'red';
+                setTimeout(() => {
+                    successText.textContent = '';
+                }, 3000);
+            }
+        });
+
+        // Basic validation
+        function checkEmpty(input) {
+            if (input.value.trim() === '') {
+                input.setCustomValidity('Field cannot be empty');
+                return false;
+            }
+            input.setCustomValidity('');
+            return true;
+        }
+
+        function checkInt(input) {
+            const value = parseInt(input.value);
+            if (isNaN(value)) {
+                input.setCustomValidity('Can only be an integer');
+                return false;
+            }
+            input.setCustomValidity('');
+            return true;
+        }
+
+        function checkFloat(input) {
+            const value = parseFloat(input.value);
+            if (isNaN(value)) {
+                input.setCustomValidity('Can only be a number');
+                return false;
+            }
+            input.setCustomValidity('');
+            return true;
+        }
+
+        document.getElementById('username').addEventListener('input', function() { checkEmpty(this); });
+        document.getElementById('quantity').addEventListener('input', function() { checkEmpty(this) && checkInt(this); });
+        document.getElementById('price').addEventListener('input', function() { checkEmpty(this) && checkFloat(this); });
+        document.getElementById('code').addEventListener('input', function() { checkEmpty(this); });
+    </script>
+</body>
+</html>
