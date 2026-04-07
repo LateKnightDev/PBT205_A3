@@ -29,7 +29,7 @@ namespace Exchange
             InitialInsert("Mathew", "SELL", 200, 20.0, "EEFF");
             InitialInsert("Mathew", "SELL", 200, 20.0, "GGGG");
             Console.WriteLine("Database created and populated with sample data.");
-            Console.ReadLine();
+            // Console.ReadLine(); // Doesn't work when building Docker
         }
         // private static string dbLocation = "Data Source=Database/trading.db";
 

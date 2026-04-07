@@ -37,7 +37,7 @@ namespace Exchange
             PrintTable("SellOrders");
             PrintTable("Trades");
             Console.WriteLine("\nPress any key to exit...");
-            Console.ReadKey();
+            // Console.ReadKey(); // Doesn't work with Docker
         }
         private static void PrintTable(string tableName)
         {

@@ -15,9 +15,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 
-// PopulateDB.Run(); // Run once to create and populate the database with sample data, comment out after first run
-// QueryDB.Run(); // Run this along with return; below to query the DB
-// return;
+CreateDB(); // Creates and populates the database with sample data if it doesn't exist
 
 string host = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
 
@@ -84,6 +82,9 @@ consumer.Received += (sender, each) =>
     bool tradeExecuted = false;
     Trade? executedTrade = null;
     ManageDB.QueryOrders(order, out tradeExecuted, out executedTrade); // Queries the database for matching orders and executes trade or adds to correct order table
+    
+    Console.WriteLine("tradeExecuted: " + tradeExecuted); // Debugging
+
     if (tradeExecuted)
     {
         Console.WriteLine("Trade executed → Not the buyer or sell but some message"); // Debugging
@@ -107,4 +108,22 @@ void PublishTrade(Trade? trade) // Publishes message to RabbitMQ
     string message = JsonSerializer.Serialize(trade);
     byte[] instruction = Encoding.UTF8.GetBytes(message);
     channel.BasicPublish(exchange: "Trading", routingKey: "Trades", basicProperties: null, body: instruction);
+}
+
+static void CreateDB()
+{
+    string dbFilePath = "Database/trading.db";
+
+    if (!File.Exists(dbFilePath))
+    {
+        Console.WriteLine("DB not found — creating and populating...");
+        PopulateDB.Run();
+        Console.WriteLine("DB created and populated\n");
+        QueryDB.Run(); // Debugging
+    }
+    else
+    {
+        Console.WriteLine("DB already exists — skipping creation\n");
+        QueryDB.Run(); // Debugging
+    }
 }

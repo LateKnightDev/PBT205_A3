@@ -67,7 +67,7 @@ namespace Exchange
             {
                 connection.Open();
                 string tableName = side == "BUY" ? "BuyOrders" : "SellOrders"; // Use side BUY||SELL to determine the correct table
-                string deleteData = "DELETE FROM " + tableName + " WHERE Id = @orderId";
+                string deleteData = "DELETE FROM " + tableName + " WHERE ID = @orderId";
                 using (SqliteCommand command = new SqliteCommand(deleteData, connection))
                 {
                     command.Parameters.AddWithValue("@orderId", orderId);
@@ -90,9 +90,22 @@ namespace Exchange
                     command.Parameters.AddWithValue("@quantity", quantity);
                     command.Parameters.AddWithValue("@price", price);
                     command.Parameters.AddWithValue("@code", code);
-                    command.ExecuteNonQuery();
+                    // command.ExecuteNonQuery();
+
+                    try
+                    {
+                        command.ExecuteNonQuery(); // Ddebugging
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("ERROR inserting trade:");
+                        Console.WriteLine(ex.Message);
+                    }
                 }
             }
+
+            Console.WriteLine("Trade halfway inserted into DB"); // Debugging
+
             Trade newTrade = new Trade
             {
                 Buyer = buyer,
@@ -102,6 +115,9 @@ namespace Exchange
                 Code = code,
                 Timestamp = DateTime.Now
             };
+
+            Console.WriteLine("Insert into DB for trade complete"); // Debugging
+
             return newTrade;
         }
         public static void QueryOrders(Order newOrder, out bool successfulTrade, out Trade? tradeDetails)
@@ -109,6 +125,12 @@ namespace Exchange
             Console.WriteLine("QueryOrders called"); // Debugging
             Console.WriteLine($"Incoming: {newOrder.Username} {newOrder.Side} {newOrder.Quantity} {newOrder.Price} {newOrder.Code}"); // Debugging
 
+            int orderID = 0; // Requires declaration to avoid errors
+            string matchedUsername = ""; // Same with this one
+            int matchedQuantity;
+            double matchedPrice;
+            string matchedCode;
+            bool matchFound = false;
 
             using (SqliteConnection connection = new SqliteConnection(dbLocation))
             {
@@ -129,7 +151,7 @@ namespace Exchange
                 }
 
                 string orderDirection = newOrder.Side == "BUY" ? "ASC" : "DESC";
-                string queryData = "SELECT * FROM " + tableName + " WHERE Code = @code AND " + priceCondition + " AND Quantity = @quantity ORDER BY Price " + orderDirection;
+                string queryData = "SELECT * FROM " + tableName + " WHERE Code = @code AND " + priceCondition + " AND Qty = @quantity ORDER BY Price " + orderDirection;
 
                 using (SqliteCommand command = new SqliteCommand(queryData, connection))
                 {
@@ -139,12 +161,6 @@ namespace Exchange
 
                     using (SqliteDataReader reader = command.ExecuteReader())
                     {
-                        int orderID = 0; // Requires declaration to avoid errors
-                        string matchedUsername = ""; // Same with this one
-                        int matchedQuantity;
-                        double matchedPrice;
-                        string matchedCode;
-                        bool matchFound = false;
                         if (reader.Read()) // Does not run at all if the queryData string returns no matches
                         {
                             orderID = reader.GetInt32(0);
@@ -154,32 +170,35 @@ namespace Exchange
                             matchedCode = reader.GetString(4);
                             matchFound = true;
                         }
-                        if (matchFound) // Process Trade
-                        {
-                            Console.WriteLine("We found a trade!!!"); // Debugging
-
-                            successfulTrade = true;
-                            if (newOrder.Side == "BUY")
-                            {
-                                tradeDetails = InsertTrade(newOrder.Username, matchedUsername, newOrder.Quantity, newOrder.Price, newOrder.Code);
-                                DeleteOrder("SELL", orderID);
-                            }
-                            else // side == "SELL"
-                            {
-                                tradeDetails = InsertTrade(newOrder.Username, newOrder.Username, newOrder.Quantity, newOrder.Price, newOrder.Code);
-                                DeleteOrder("BUY", orderID);
-                            }
-                        }
-                        else // No match found
-                        {
-                            Console.WriteLine("We didn't find a trade!!!"); // Debugging
-
-                            successfulTrade = false;
-                            InsertOrder(newOrder);
-                        }
                     }
                 }
             }
+            if (matchFound) // Process Trade
+            {
+                Console.WriteLine("We found a trade!!!"); // Debugging
+
+                successfulTrade = true;
+                if (newOrder.Side == "BUY")
+                {
+                    tradeDetails = InsertTrade(newOrder.Username, matchedUsername, newOrder.Quantity, newOrder.Price, newOrder.Code);
+                    DeleteOrder("SELL", orderID);
+                    Console.WriteLine("Trade executed and deleted from SELL orders"); // Debugging
+                }
+                else // side == "SELL"
+                {
+                    tradeDetails = InsertTrade(matchedUsername, newOrder.Username, newOrder.Quantity, newOrder.Price, newOrder.Code);
+                    DeleteOrder("BUY", orderID);
+                    Console.WriteLine("Trade executed and deleted from BUY orders"); // Debugging
+                }
+            }
+            else // No match found
+            {
+                Console.WriteLine("We didn't find a trade!!!"); // Debugging
+
+                successfulTrade = false;
+                InsertOrder(newOrder);
+            }
+            Console.WriteLine("successfulTrade: " + successfulTrade); // Debugging
         }
     }
 }
