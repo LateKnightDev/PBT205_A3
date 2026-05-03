@@ -1,5 +1,7 @@
 ﻿// Run once to create and populate the database with sample data
 
+// This program is called once when the server-side of the application is first run on a clean build. This program is called up from 'Program'
+
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,7 @@ namespace Exchange
     {
         public static void Run()
         {
+            // Load some random data to use with testing the application
             Console.WriteLine($"Working Dir: {Directory.GetCurrentDirectory()}");
             CreateDatabase();
             InitialInsert("Luke", "BUY", 100, 10.5, "ABCD");
@@ -39,7 +42,7 @@ namespace Exchange
         {
             string basePath = Directory.GetCurrentDirectory();
 
-            // Walk up until we find the Database folder
+            // Finding the full directory path to the Database folder
             while (!Directory.Exists(Path.Combine(basePath, "Database")))
             {
                 basePath = Directory.GetParent(basePath).FullName;
@@ -53,7 +56,7 @@ namespace Exchange
         }
 
 
-        public static void CreateDatabase()
+        public static void CreateDatabase() // Create database file in local directory
         {
             string dbFilePath = dbLocation.Replace("Data Source=", "");
             var directory = Path.GetDirectoryName(dbFilePath);

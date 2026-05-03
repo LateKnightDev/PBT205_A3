@@ -12,7 +12,7 @@ namespace Exchange
     {
         public string Username { get; set; } // Username
         public string Side { get; set; } // "BUY" or "SELL"
-        public int Quantity { get; set; } // Fixed at 100 for this assessment
+        public int Quantity { get; set; } // Updated to be variable for A3
         public double Price { get; set; } // Price specified by the user in the command line input
         public string Code { get; set; } // Trading company code
     }

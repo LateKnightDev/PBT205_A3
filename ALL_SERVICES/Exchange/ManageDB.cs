@@ -1,10 +1,9 @@
 ﻿/*
  * DB actions for Luke:
- * - Insert new orders - Done but not tested
- * - Insert new trades - Done but not tested
- * - Delete orders when they are traded - Done but not tested
- * - Query DB for matching orders and execute trade or add to correct order table - Done but not tested
- * 
+ * - Insert new orders - Done
+ * - Insert new trades - Done
+ * - Delete orders when they are traded - Done
+ * - Query DB for matching orders and execute trade or add to correct order table - Done
  */
 
 
@@ -27,7 +26,7 @@ namespace Exchange
         {
             string basePath = Directory.GetCurrentDirectory();
 
-            // Walk up until we find the Database folder
+            // Finding the full directory path to the Database folder
             while (!Directory.Exists(Path.Combine(basePath, "Database")))
             {
                 basePath = Directory.GetParent(basePath).FullName;
@@ -40,7 +39,7 @@ namespace Exchange
             return $"Data Source={fullPath}";
         }
 
-        public static void InsertOrder(Order newOrder)
+        public static void InsertOrder(Order newOrder) // Inserts new order to database where no trading match is found
         {
             Console.WriteLine("Inserting order to DB"); // Debugging
 
@@ -59,7 +58,7 @@ namespace Exchange
                 }
             }
         }
-        public static void DeleteOrder(string side, int orderId)
+        public static void DeleteOrder(string side, int orderId) // Deletes order from the unmatched orders table when a successful trade is executed
         {
             Console.WriteLine("Deleting order from DB"); // Debugging
             
@@ -75,7 +74,7 @@ namespace Exchange
                 }
             }
         }
-        public static Trade InsertTrade(string buyer, string seller, int quantity, double price, string code)
+        public static Trade InsertTrade(string buyer, string seller, int quantity, double price, string code) // Inserts trade into the database
         {
             Console.WriteLine("Inserting trade into DB"); // Debugging
             
@@ -120,7 +119,7 @@ namespace Exchange
 
             return newTrade;
         }
-        public static void QueryOrders(Order newOrder, out bool successfulTrade, out Trade? tradeDetails)
+        public static void QueryOrders(Order newOrder, out bool successfulTrade, out Trade? tradeDetails) // Does all the heavy lifting
         {
             Console.WriteLine("QueryOrders called"); // Debugging
             Console.WriteLine($"Incoming: {newOrder.Username} {newOrder.Side} {newOrder.Quantity} {newOrder.Price} {newOrder.Code}"); // Debugging

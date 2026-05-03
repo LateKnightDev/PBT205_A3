@@ -6,6 +6,8 @@ I confirm that the use of the AI tool has been in accordance with the relevant p
 I confirm that the final output is authored by me and represents my own thoughts and critical analysis. 
 I take full responsibility for the final content of this assessment. 
 Luke Dawson - StudentID A00113129
+
+Note - this is the same as A1 but given the same code is used for both assignments I felt I should include the declaration for A3 as well.
 */
 
 using Exchange;

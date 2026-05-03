@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
+// This program is called up when starting up the server to show the database has been pre-populated with sample data for testing
+
 namespace Exchange
 {
     public static class QueryDB
@@ -17,7 +19,7 @@ namespace Exchange
         {
             string basePath = Directory.GetCurrentDirectory();
 
-            // Walk up until we find the Database folder
+            // Finding the full directory path to the Database folder
             while (!Directory.Exists(Path.Combine(basePath, "Database")))
             {
                 basePath = Directory.GetParent(basePath).FullName;
